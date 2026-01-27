@@ -1,6 +1,6 @@
 #Metadata
 __name__ = "Coldcrow's Dice Tower"
-__version__ = "1.0"
+__version__ = "1.1"
 __author__ = "Coldcrow"
 
 #import modules

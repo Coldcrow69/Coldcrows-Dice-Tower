@@ -1,14 +1,51 @@
-name = "Coldcrow's Dice Tower"
-version = "1.0"
-author = "Coldcrow"
+# 🎲 Coldcrow's Dice Tower
 
-DESCRIPTION:
-This small app will likely not be useful to the majority of people, as there are simple online dice rollers that are better than this one objectively. This project was created to simplify the rolling of "Moon Sugar", a custom mechanic in a D&D 5e campaign I'm playing in. In the process of doing that, it was easy to just flesh out the whole app to be a digital dice tower, as most of the code was built to support the moon sugar function to begin with. 
+A lightweight **digital dice tower** built for a custom D&D 5e mechanic (**“Moon Sugar”**), then expanded into a general-purpose roller because it was already halfway there.
 
-HOW TO USE IT:
-1... Download the EXE for windows, or the Python code directly. Run the application. 
-2... Select either standard roller, or premade roller from the menu, follow the on screen prompts.
+---
 
-The standard roller is intended to roll a specified number of a certain type of dice, and add/subtract some value to it. For example, inputting 1D20+5 to the standard roller would roll 1D20, and add 5 to the total. 
+## 📌 Version & Author
 
-The custom roller was made with the intention of hardcoding certain custom effects to use the dice rolling functions with. The only included example in 1.0 is the moon sugar buff. This function would be more useful if it could be programmed by the end user with their own custom functions, instead of requiring a hard coding and re-compile.
+- 🏷️ **Version:** 1.1  
+- ✍️ **Author:** Coldcrow  
+
+---
+
+## 🧠 What This Is
+
+This project is intentionally **small** and a bit **niche**. There are plenty of online dice rollers that are objectively more feature-rich. This exists because it made one specific table mechanic *fast* and *easy*, and the rest of the app naturally grew from that foundation.
+
+---
+
+## ✨ Features
+
+### 🎲 Standard Roller
+Roll classic dice expressions like:
+
+- `1D20+5`
+- `4D6-2`
+- `2D8+3`
+
+The standard roller:
+- 🎲 Rolls the specified dice
+- ➕➖ Applies a modifier
+- 🧾 Outputs the total
+
+---
+
+### 🧩 Premade / Custom Roller
+A menu-driven roller intended for a custom Moonsugar mechanic.
+
+> ⚠️ **Note:** In the current version, custom rollers are **hardcoded**.  
+> This would be *much* more useful if end users could define their own custom roller functions without requiring a recompile.
+
+---
+
+## 🚀 How to Use
+
+1. 📥 Download either:
+   - 🪟 the **Windows EXE**, or  
+   - 🐍 the **Python source code**
+2. ▶️ Run the application.
+3. 🧭 From the menu, select your roller.
+4. 📺 Follow the on-screen prompts.
