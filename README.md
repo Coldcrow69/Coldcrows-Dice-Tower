@@ -6,8 +6,9 @@ A lightweight **digital dice tower** built for a custom D&D 5e mechanic (**“Mo
 
 ## 📌 Version & Author
 
-- 🏷️ **Version:** 1.1  
+- 🏷️ **Version:** 1.2  
 - ✍️ **Author:** Coldcrow  
+- 🪟 **Platform:** Windows 11
 
 ---
 
@@ -20,16 +21,19 @@ This project is intentionally **small** and a bit **niche**. There are plenty of
 ## ✨ Features
 
 ### 🎲 Standard Roller
-Roll classic dice expressions like:
+Roll classic dice expressions in `NdM`, `NdM+K`, or `NdM-K` form:
 
 - `1D20+5`
 - `4D6-2`
 - `2D8+3`
 
+Input is **case-insensitive** and **whitespace-tolerant**, so `1d20+5`, `1D20+5`, and `1 D 20 + 5` are all valid. Anything that isn't a well-formed roll is rejected safely.
+
 The standard roller:
 - 🎲 Rolls the specified dice
 - ➕➖ Applies a modifier
-- 🧾 Outputs the total
+- 🧾 Lists each die result and outputs the total
+- 🔁 Loops for repeated rolls; enter `q` to return to the menu
 
 ---
 
@@ -44,8 +48,8 @@ A menu-driven roller intended for a custom Moonsugar mechanic.
 ## 🚀 How to Use
 
 1. 📥 Download either:
-   - 🪟 the **Windows EXE**, or  
-   - 🐍 the **Python source code**
+   - 🪟 the **Windows EXE** — just double-click `Coldcrow's Dice Tower.exe`, or  
+   - 🐍 the **Python source code** — run `python DiceTower_Main.py` (Python 3, Windows 11)
 2. ▶️ Run the application.
 3. 🧭 From the menu, select your roller.
 4. 📺 Follow the on-screen prompts.

@@ -1,153 +1,144 @@
-#Metadata
-__name__ = "Coldcrow's Dice Tower"
-__version__ = "1.1"
+# Metadata
+__app_name__ = "Coldcrow's Dice Tower"
+__version__ = "1.2"
 __author__ = "Coldcrow"
 
-#import modules
-import os
+# import modules
+import re
+import sys
 import time
 import random
 import msvcrt
-import sys
+import subprocess
 
-#define parseRollRequest. Takes custom user input string, removes whitespace, converts to lower, and outputs 3 integers for number of dice to roll, size of dice, and math modifier.
+# Matches a roll request like "1d20+4", "2d6-1", or "1d100". Whitespace and
+# case are normalized away before matching, so " 1 D 20 + 4 " is valid.
+ROLL_PATTERN = re.compile(r"^(\d+)d(\d+)([+-]\d+)?$")
+
+
 def parseRollRequest(rollRequest):
-    diceQuantity = 0
-    diceSize = 0
-    diceModifier = 0
-    try:
-        rollRequest = rollRequest.replace(" ", "").lower()
-        diceQuantity = int(rollRequest[0:rollRequest.find('d')])
-        if '+' in rollRequest:
-            diceSize = int(rollRequest[rollRequest.find('d') + 1:rollRequest.find('+')])
-            diceModifier = int(rollRequest[rollRequest.find('+') + 1:len(rollRequest) + 1])
-        elif '-' in rollRequest:
-            diceSize = int(rollRequest[rollRequest.find('d') + 1:rollRequest.find('-')])
-            diceModifier = int(rollRequest[rollRequest.find('-') + 1:len(rollRequest) + 1]) * -1
-        else:
-            diceSize = int(rollRequest[rollRequest.find('d') + 1:len(rollRequest) + 1])
-        return(diceQuantity,diceSize,diceModifier)
-    except:
-        return(0,0,0)
+    """Parse a roll string into (quantity, size, modifier).
 
-#define diceTower. Takes 3 integer inputs for dice quantity, dice size, and math modifier, rolls the specified number of dice using randint(), and produces a sum total including the math modifier. Returns a tuple in the form of ([list of rolls], sum total)
-def diceTower(diceQuantity,diceSize,diceModifier):
-    myRolls = []
-    myRollsSum = 0
-    while diceQuantity > 0:
-        myRolls.append(random.randint(1,diceSize))
-        diceQuantity -= 1
-    myRollsSum = sum(myRolls) + diceModifier
-    return(myRolls,myRollsSum)
+    Returns (0, 0, 0) for any input that is not a well-formed roll request.
+    """
+    match = ROLL_PATTERN.match(rollRequest.replace(" ", "").lower())
+    if not match:
+        return (0, 0, 0)
+    quantity, size, modifier = match.groups()
+    return (int(quantity), int(size), int(modifier) if modifier else 0)
 
-#define standardRoller. Produces a menu where a user can enter a string such as "1d4+20" which will be passed to the parseRollRequest function to be scrubbed before the parsed version is passed to diceTower to be rolled. Prints the result of the dice rolls and the sum total.
+
+def diceTower(diceQuantity, diceSize, diceModifier=0):
+    """Roll diceQuantity dice of diceSize sides. Returns ([rolls], modified sum)."""
+    if diceQuantity <= 0 or diceSize <= 0:
+        return ([], diceModifier)
+    rolls = [random.randint(1, diceSize) for _ in range(diceQuantity)]
+    return (rolls, sum(rolls) + diceModifier)
+
+
+def clear_screen():
+    """Clear the console (Windows). Replaces the deprecated os.system('cls')."""
+    subprocess.run(["cmd", "/c", "cls"], check=False)
+
+
+def header(title, subtitle):
+    """Clear the screen and print a standard boxed header."""
+    clear_screen()
+    print("==================================")
+    print("       | {} |".format(title))
+    print("      | {} |".format(subtitle))
+    print("==================================\n")
+
+
+def pause(warning="Roll data will be lost."):
+    """Wait for a keypress, warning the user that on-screen results will clear."""
+    print("Press any key to continue... WARNING: {}".format(warning))
+    msvcrt.getch()
+
+
 def standardRoller():
-    rollRequest = ""
-    myResult = []
-    os.system("cls")
-    print("==================================")
-    print("       | STANDARD ROLLER |")
-    print("       | ROLL YOUR DICE  |")
-    print("==================================\n")
-    print("Ex. 1D20+4 OR q to quit.\n")
-    rollRequest = input("Your Roll: ")
-    if rollRequest.lower() == 'q':
-        menu()
-    else:
-        print("")
-        print("Rolling {}...\n".format(rollRequest))
-        rollRequest = parseRollRequest(rollRequest)
-        myResult = diceTower(rollRequest[0],rollRequest[1],rollRequest[2])
-        print("Your dice rolls were... {}\n".format(myResult[0]))
-        print("Your total modified roll is... {}\n".format(myResult[1]))
-        print("Press any key to continue... WARNING: Roll data will be lost.")
-        msvcrt.getch()
-        standardRoller()
+    """Prompt for free-form roll requests (e.g. "1d20+4") and roll them."""
+    while True:
+        header("STANDARD ROLLER", " ROLL YOUR DICE ")
+        print("Ex. 1D20+4 OR q to quit.\n")
+        rollRequest = input("Your Roll: ")
+        if rollRequest.lower() == "q":
+            return
 
-#define premadeRoller. Holds hardcoded premades which pass rolls to diceTower and print the necessary output information. At a later date this function should be split into a premadeRollerMenu, and a separate function for each premade roll.
-def premadeRoller():
-    menuSelection = ""
-    dankRoll = []
-    dankness = 0
+        print("\nRolling {}...\n".format(rollRequest))
+        quantity, size, modifier = parseRollRequest(rollRequest)
+        rolls, total = diceTower(quantity, size, modifier)
+        print("Your dice rolls were... {}\n".format(rolls))
+        print("Your total modified roll is... {}\n".format(total))
+        pause()
+
+
+def moonSugar():
+    """Roll the Moon Sugar premade effect and print its modifier tables."""
+    print("\nRolling 1d100 (advantage) for dankness...\n")
+    dankRoll, _ = diceTower(2, 100)
+    dankness = sorted(dankRoll)[1]
+
     statMod = 0
-    hpMod = 0
-    os.system("cls")
-    print("==================================")
-    print("       | PREMADE ROLLER |")
-    print("      | MAKE A SELECTION |")
-    print("==================================\n")
-    print("1...    Moon Sugar\n")
-    print("2...    Quit to Menu\n")
-    print("==================================\n")
-    try:
-        menuSelection = int(input("Enter your selection: "))
-        if menuSelection == 1:
-            print("")
-            print("Rolling 1d100 (advantage) for dankness...\n")
-            dankRoll = diceTower(2,100,0)
-            dankness = sorted(dankRoll[0])[1]
-            if dankness == 1:
-                hpMod = -5
-            elif dankness in range(2,26,1):
-                hpMod = diceTower(1,4,0)[1]
-            elif dankness in range(26,51,1):
-                hpMod = diceTower(1,6,0)[1]
-            elif dankness in range(51,76,1):
-                hpMod = diceTower(1,8,0)[1]
-                statMod = diceTower(2,4,0)[1]
-            elif dankness in range(76,100,1):
-                hpMod = diceTower(1,10,0)[1]
-                statMod = diceTower(2,4,0)[1]
-            else:
-                hpMod = diceTower(1,20,0)[1]
-                statMod = diceTower(2,4,0)[1]
-            print("You rolled {} for dankness.\n".format(dankness))
-            print("A list of effects is found below. These effects last 1 hour.\n")
-            print("==================================\n")
-            print("GLOBAL MODIFIERS:")
-            print("- All reactions are performed at disadvantage w/ normalized DC 12.")
-            print("- Disadvantage on initiative.")
-            print("- Disadvantage on DEX checks.")
-            print("- Disadvantage on WIS checks.")
-            print("- Disadvantage on INT checks.\n")
-            print("==================================\n")
-            print("STAT MODIFIERS:")
-            print("- Subtract {} among your WIS and/or INT.".format(statMod))
-            print("- Add {} among your DEX, STR, and/or CHA.\n".format(statMod))
-            print("==================================\n")
-            print("HP MODIFIERS:")
-            print("- Add {} to your HP MAX and CURRENT HP.\n".format(hpMod))
-            print("==================================\n")
-            print("Press any key to continue... WARNING: Results will be cleared.")
-            msvcrt.getch()
-            premadeRoller()
-        elif menuSelection == 2:
-            menu()
-        else:
-            raise ValueError
-    except ValueError:
-        print("\nINVALID SELECTION")
-        time.sleep(2)
-        premadeRoller()
-    rollRequest = input("Your Roll: ")
-    if rollRequest.lower() == 'q':
-        menu()
+    if dankness == 1:
+        hpMod = -5
+    elif dankness <= 25:
+        hpMod = diceTower(1, 4)[1]
+    elif dankness <= 50:
+        hpMod = diceTower(1, 6)[1]
+    elif dankness <= 75:
+        hpMod = diceTower(1, 8)[1]
+        statMod = diceTower(2, 4)[1]
+    elif dankness <= 99:
+        hpMod = diceTower(1, 10)[1]
+        statMod = diceTower(2, 4)[1]
     else:
-        print("")
-        print("Rolling {}...\n".format(rollRequest))
-        rollRequest = parseRollRequest(rollRequest)
-        myResult = diceTower(rollRequest[0],rollRequest[1],rollRequest[2])
-        print("Your dice rolls were... {}\n".format(myResult[0]))
-        print("Your total modified roll is... {}\n".format(myResult[1]))
-        print("Press any key to continue... WARNING: Roll data will be lost.")
-        msvcrt.getch()
-        standardRoller()
+        hpMod = diceTower(1, 20)[1]
+        statMod = diceTower(2, 4)[1]
 
-#define menu. This acts as the main menu using a basic ASCII art GUI, accepting user input to choose a function of the program.
+    print("You rolled {} for dankness.\n".format(dankness))
+    print("A list of effects is found below. These effects last 1 hour.\n")
+    print("==================================\n")
+    print("GLOBAL MODIFIERS:")
+    print("- All reactions are performed at disadvantage w/ normalized DC 12.")
+    print("- Disadvantage on initiative.")
+    print("- Disadvantage on DEX checks.")
+    print("- Disadvantage on WIS checks.")
+    print("- Disadvantage on INT checks.\n")
+    print("==================================\n")
+    print("STAT MODIFIERS:")
+    print("- Subtract {} among your WIS and/or INT.".format(statMod))
+    print("- Add {} among your DEX, STR, and/or CHA.\n".format(statMod))
+    print("==================================\n")
+    print("HP MODIFIERS:")
+    print("- Add {} to your HP MAX and CURRENT HP.\n".format(hpMod))
+    print("==================================\n")
+    pause("Results will be cleared.")
+
+
+def premadeRoller():
+    """Menu of hardcoded premade rolls."""
+    while True:
+        header("PREMADE ROLLER", "MAKE A SELECTION")
+        print("1...    Moon Sugar\n")
+        print("2...    Quit to Menu\n")
+        print("==================================\n")
+        selection = input("Enter your selection: ")
+        if selection == "1":
+            moonSugar()
+        elif selection == "2":
+            return
+        else:
+            print("\nINVALID SELECTION")
+            time.sleep(2)
+
+
 def menu():
-    menuSelection = ""
-    os.system("cls")
-    print("""
+    """Main menu. Loops until the user chooses to exit."""
+    while True:
+        clear_screen()
+        print(r"""
+           
    ____           _       _                                    _       
   / ___|   ___   | |   __| |   ___   _ __    ___   __      __ ( )  ___ 
  | |      / _ \  | |  / _` |  / __| | '__|  / _ \  \ \ /\ / / |/  / __|
@@ -160,28 +151,26 @@ def menu():
  |____/  |_|  \___|  \___|       |_|    \___/    \_/\_/    \___| |_|                                                                        
 
     """)
-    print("==================================")
-    print("""          | MAIN MENU |
+        print("==================================")
+        print("""          | MAIN MENU |
       | MAKE A SELECTION |""")
-    print("==================================\n")
-    print("1...    Standard Roller\n")
-    print("2...    Premade Roller\n")
-    print("3...    Exit Program\n")
-    print("==================================\n")
-    try:
-        menuSelection = int(input("Enter your selection: "))
-        if menuSelection == 1:
+        print("==================================\n")
+        print("1...    Standard Roller\n")
+        print("2...    Premade Roller\n")
+        print("3...    Exit Program\n")
+        print("==================================\n")
+        selection = input("Enter your selection: ")
+        if selection == "1":
             standardRoller()
-        elif menuSelection == 2:
+        elif selection == "2":
             premadeRoller()
-        elif menuSelection == 3:
+        elif selection == "3":
             sys.exit()
         else:
-            raise ValueError
-    except ValueError:
-        print("\nINVALID SELECTION")
-        time.sleep(2)
-        menu()
+            print("\nINVALID SELECTION")
+            time.sleep(2)
 
-#start the program
-menu()
+
+# start the program
+if __name__ == "__main__":
+    menu()
